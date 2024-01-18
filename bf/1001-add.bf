@@ -5,13 +5,13 @@
 >,----------------------------------------------
 
 # Add the numeric values of the two digits
-[->+<]
+[<<+>>-]
 
 # Add the first digit to the total
-<[->+<]
+<[<+>-]
 
 # Increment to get the ASCII code of the result
->++++
+<++++++++++++++++++++++++++++++++++++++++++++++++
 
 # Print the result
 .
