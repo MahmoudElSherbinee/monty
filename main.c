@@ -5,229 +5,186 @@
 
 #define MONTYOPCT 14
 
-static MontyGlobal monty_global;
+static montyglob mglob;
 
 /**
- * wrapExit - function wraps the exit process with additional
- * functionality, printing an exit message and freeing resources.
- * This function takes an exit code, an exit string, and
- * a stack pointer as parameters. It prints the exit string (if provided)
- * along with the corresponding line number, frees the stack memory,
- * frees the script buffer, closes the script file,
- * and exits the program with the given exit code.
+ * exitwrap - free things and exit the program. Print error message as needed
  *
- * @code: The exit code for the program.
- * @	message: The exit string to be printed (can be NULL).
- * @upper: A pointer to the upper of the stack.
- *
- * Users can utilize this function to perform cleanup tasks
- * and exit the program with custom messages.
+ * @exitcode: exit code
+ * @exitstring: error string to print, if any
+ * @top: top of stack (for freeing)
  */
-void wrapExit(int code, char *message, stack_t *upper)
+void exitwrap(int exitcode, char *exitstring, stack_t *top)
 {
-	stack_t *ptr = upper;
+	stack_t *ptr = top;
 
-	if (message != NULL)
+	if (exitstring != NULL)
+		printf("L%lu: %s\n", mglob.linenum, exitstring);
+	while (top != NULL)
 	{
-		printf("L%lu: %s\n", monty_global.lineNumber, message);
+		ptr = top->prev;
+		free(top);
+		top = ptr;
 	}
-
-	while (upper != NULL)
-	{
-		ptr = upper->prev;
-		free(upper);
-		upper = ptr;
-	}
-
-	free(monty_global.scriptBuffer);
-	fclose(monty_global.scriptFile);
-	exit(code);
+	free(mglob.buffer);
+	fclose(mglob.script);
+	exit(exitcode);
 }
 
 /**
- * Custom parser - function for interpreting a custom script language.
- * This function reads a custom script from a file, processes the script,
- * and executes corresponding custom operations. It utilizes a custom stack
- * with push, pop, and other operations defined in the given operations array.
+ * isnumstr - checks if a string is a number
  *
- * @operations: An array of OperationType representing supported operations.
+ * @str: string to check
  *
- * Return: Returns 0 on successful execution, EXIT_FAILURE on failure.
+ * Return: 1 if numeric, 0 otherwise
  */
-
-int customParser(OperationType *operations)
+int isnumstr(char *str)
 {
-	/* Initialize variables */
-	size_t length = 0, value, mode = S_M;
-	stack_t *upper = NULL;
-	stack_t *lower = NULL;
-	char *token;
-
-	/* Read lines from the script until the end is reached */
-	while (getline(&monty_global.scriptBuffer,
-												&length, monty_global.scriptFile) > 0)
+	if (*str == '-')
 	{
-		/* Check for memory allocation failure */
-		if (monty_global.scriptBuffer == NULL)
+		str++;
+		if (*str < '0' || *str > '9')
+			return (0);
+		str++;
+	}
+	while (*str != 0)
+		if (*str < '0' || *str++ > '9')
+			return (0);
+	return (1);
+}
+
+/**
+ * montyparse - parser for monty script files
+ * note that bot is updated to NULL only in the case of pushing with
+ * NULL top. All other opcodes using bot should check if top is NULL
+ * first.
+ *
+ * @ops: array of opcodes and pointers to functions for them
+ *
+ * Return: 0 if successful
+ */
+int montyparse(optype *ops)
+{
+	size_t len = 0, val, mode = STACKMODE;
+	stack_t *top = NULL, *bot = NULL;
+	char *tok;
+
+	while (getline(&mglob.buffer, &len, mglob.script) > 0)
+	{
+		if (mglob.buffer == NULL)
 		{
 			printf("Error: malloc failed\n");
-			wrapExit(EXIT_FAILURE, NULL, upper);
+			exitwrap(EXIT_FAILURE, NULL, top);
 		}
-
-		/* Tokenize the line using newline and space as delimiters */
-		token = strtok(monty_global.scriptBuffer, "\n ");
-
-		/* Process each token */
-		if (token != NULL)
+		tok = strtok(mglob.buffer, "\n ");
+		if (tok != NULL)
 		{
-			value = 0;
-
-			/* Check for comments or "nop" instruction */
-			if (*token == '#' || !strcmp(token, "nop"))
-				; /* Do nothing for comments or "nop" */
-
-			/* Check for "queue" instruction */
-			else if (!strcmp(token, "queue"))
-				mode = Q_M;
-
-			/* Check for "stack" instruction */
-			else if (!strcmp(token, "stack"))
-				mode = S_M;
-
-			/* Process other instructions */
+			val = 0;
+			if (*tok == '#' || !strcmp(tok, "nop"))
+				;
+			else if (!strcmp(tok, "queue"))
+				mode = QUEUEMODE;
+			else if (!strcmp(tok, "stack"))
+				mode = STACKMODE;
 			else
 			{
-				/* Find the index of the operation in the operations array */
-				while (value < MONTYOPCT && strcmp(token, operations[value].operationCode))
-					value++;
-
-				/* Process based on the operation type */
-				if (value == 0)
+				while (val < MONTYOPCT && strcmp(tok, ops[val].opcode))
+					val++;
+				if (val == 0)
 				{
-					/* Handle custom_push instruction */
-					token = strtok(NULL, "\n ");
-					if (token == NULL || !isNumericString(token))
-						wrapExit(EXIT_FAILURE, "usage: push integer", upper);
-					operations[0].operation_function.operate_push_mode(&upper, &lower, atoi(token), mode);
+					tok = strtok(NULL, "\n ");
+					if (tok == NULL || !isnumstr(tok))
+						exitwrap(EXIT_FAILURE, "usage: push integer", top);
+					ops[0].func.pushmode(&top, &bot, atoi(tok), mode);
 				}
-				else if (value < 4)
-					/* Handle operations with customTopBottom function */
-					operations[value].operation_function.operate_top_bottom(&upper, &lower);
-				else if (value < MONTYOPCT)
-					/* Handle operations with customTopOnly function */
-					operations[value].operation_function.operate_top_only(&upper);
+				else if (val < 4)
+					ops[val].func.topbot(&top, &bot);
+				else if (val < MONTYOPCT)
+					ops[val].func.toponly(&top);
 				else
 				{
-					/* Handle unknown instruction */
-					printf("L%ld: unknown instruction %s\n", monty_global.lineNumber, token);
-					wrapExit(EXIT_FAILURE, NULL, upper);
+					printf("L%ld: unknown instruction %s\n", mglob.linenum, tok);
+					exitwrap(EXIT_FAILURE, NULL, top);
 				}
 			}
 		}
-
-		/* Free allocated memory and reset variables */
-		free(monty_global.scriptBuffer);
-		monty_global.scriptBuffer = NULL;
-		length = 0;
-		monty_global.lineNumber++;
+		free(mglob.buffer);
+		mglob.buffer = NULL;
+		len = 0;
+		mglob.linenum++;
 	}
-
-	/* Exit the function with success status */
-	wrapExit(EXIT_SUCCESS, NULL, upper);
-	return 0;
-}
-
-
-/**
- * operation_type - function creates and initializes
- * an array of OperationType for supported operations.
- * This function initializes an array of OperationType, each representing
- * a specific operation in the Monty language. The array includes information
- * about operation codes and corresponding function pointers to execute
- * the operations.
- *
- * Return:  Returns a pointer to the array of
- * OperationType representing supported operations.
- */
-
-OperationType *operation_type()
-{
-	/* Declare a static array of OperationType with 14 elements. */
-	static OperationType h[14];
-	/* STACK OPERATIONS */
-	h[0].operationCode = "push";
-	h[0].operation_function.operate_push_mode = pushNewValue;
-	h[1].operationCode = "pop";
-	h[1].operation_function.operate_top_only = popTopElement;
-	h[2].operationCode = "swap";
-	h[2].operation_function.operate_top_bottom = swapTopElements;
-	/* ------------------------------------------------------------- */
-	/* ROTATIONS */
-	h[3].operationCode = "rotr";
-	h[3].operation_function.operate_top_bottom = rotateRight;
-
-	h[4].operationCode = "rotl";
-	h[4].operation_function.operate_top_bottom = rotateLeft;
-	/* ------------------------------------------------------------- */
-	/* PRINTERS */
-	h[5].operationCode = "pchar";
-	h[5].operation_function.operate_top_only = printChar;
-	h[6].operationCode = "pstr";
-	h[6].operation_function.operate_top_only = printString;
-	h[7].operationCode = "pint";
-	h[7].operation_function.operate_top_only = printTopInt;
-	h[8].operationCode = "pall";
-	h[8].operation_function.operate_top_only = printAll;
-	/* ------------------------------------------------------------- */
-	/* CODE OPERAIONS */
-	h[9].operationCode = "add";
-	h[9].operation_function.operate_top_only = addTopElements;
-	h[10].operationCode = "sub";
-	h[10].operation_function.operate_top_only = subtractTopElements;
-	h[11].operationCode = "mul";
-	h[11].operation_function.operate_top_only = multiplyTopElements;
-	h[12].operationCode = "div";
-	h[12].operation_function.operate_top_only = divideTopElements;
-	h[13].operationCode = "mod";
-	h[13].operation_function.operate_top_only = calculateRemainder;
-	/* Return the array of OperationType. */
-	return (h);
+	exitwrap(EXIT_SUCCESS, NULL, top);
+	return (0);
 }
 
 /**
- * main - function for the Monty interpreter.
- * This function serves as the entry point for the Monty interpreter.
- * It reads a Monty script from a file, processes the script, and
- * executes the corresponding operations.
+ * initops - initialize array of opcodes and functions for them
  *
- * @argc: Number of command-line arguments.
- * @argv: Array of command-line argument strings.
- *
- * Return:  Returns 0 on successful execution, EXIT_FAILURE on failure.
+ * Return: array of optypes
  */
-
-int main(int argc, char *argv[])
+optype *initops()
 {
+	static optype head[14];
 
-	OperationType *operations;
+	head[0].opcode = "push";
+	head[0].func.pushmode = push;
+	head[1].opcode = "rotl";
+	head[1].func.topbot = rotl;
+	head[2].opcode = "rotr";
+	head[2].func.topbot = rotr;
+	head[3].opcode = "swap";
+	head[3].func.topbot = swap;
+	head[4].opcode = "pop";
+	head[4].func.toponly = pop;
+	head[5].opcode = "pall";
+	head[5].func.toponly = pall;
+	head[6].opcode = "pint";
+	head[6].func.toponly = pint;
+	head[7].opcode = "pchar";
+	head[7].func.toponly = pchar;
+	head[8].opcode = "pstr";
+	head[8].func.toponly = pstr;
+	head[9].opcode = "add";
+	head[9].func.toponly = add;
+	head[10].opcode = "sub";
+	head[10].func.toponly = sub;
+	head[11].opcode = "mul";
+	head[11].func.toponly = mul;
+	head[12].opcode = "div";
+	head[12].func.toponly = _div;
+	head[13].opcode = "mod";
+	head[13].func.toponly = mod;
 
-	if (argc != 2)
+	return (head);
+}
+
+/**
+ * main - parse a monty script file
+ *
+ * @ac: number of arguments
+ * @av: argument array
+ *
+ * Return: EXIT_SUCCESS on success, EXIT_FAILURE otherwise
+ */
+int main(int ac, char *av[])
+{
+	optype *ops;
+
+	if (ac != 2)
 	{
 		printf("USAGE: monty file\n");
 		return (EXIT_FAILURE);
 	}
-
-	monty_global.scriptFile = fopen(argv[1], "r");
-	if (monty_global.scriptFile == NULL)
+	mglob.script = fopen(av[1], "r");
+	if (mglob.script == NULL)
 	{
-		printf("Error: Can't open file %s\n", argv[1]);
+		printf("Error: Can't open file %s\n", av[1]);
 		return (EXIT_FAILURE);
 	}
-
-	operations = operation_type();
-	monty_global.lineNumber = 1;
-	customParser(operations);
-
+	ops = initops();
+	mglob.linenum = 1;
+	montyparse(ops);
 	return (0);
 }
+
 #undef MONTYOPCT

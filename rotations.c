@@ -1,63 +1,41 @@
 #include "monty.h"
 
 /**
- * rotateRight - function rotates the stack to the right,
- * moving the bottom element to the upper.
- * This function rotates the stack to the right,
- * moving the bottom element to the upper,
- * and updates the stack pointers accordingly.
+ * rotl - "rotate left" put top of stack on bottom
  *
- * @upper: A pointer to the upper of the stack.
- * @lower: A pointer to the bottom of the stack.
- *
- * @note Users can use this function to perform a right rotation on the stack.
+ * @top: top of stack
+ * @bot: bottom of stack
  */
-void rotateRight(stack_t **upper, stack_t **lower)
+void rotl(stack_t **top, stack_t **bot)
 {
-	stack_t *upper_ptr = *upper, *lower_ptr = *lower;
+	stack_t *ptrt = *top, *ptrb = *bot;
 
-	/* Check if there are enough elements in the stack to perform the rotation */
-	if (upper_ptr == NULL || upper_ptr->prev == NULL)
-	{
+	if (ptrt == NULL || ptrt->prev == NULL)
 		return;
-	}
-
-	/* Adjust pointers to perform the right rotation */
-	upper_ptr->next = lower_ptr;
-	lower_ptr->prev = upper_ptr;
-	*lower = lower_ptr->next;
-	(*lower)->prev = NULL;
-	*upper = lower_ptr;
-	lower_ptr->next = NULL;
+	ptrt->next = ptrb;
+	ptrb->prev = ptrt;
+	*top = ptrt->prev;
+	(*top)->next = NULL;
+	*bot = ptrt;
+	ptrt->prev = NULL;
 }
 
 /**
- * rotateLeft - function rotates the stack to the left,
- * moving the upper element to the lower.
- * This function rotates the stack to the left,
- * moving the upper element to the lower,
- * and updates the stack pointers accordingly.
+ * rotr - "rotate right" put bottom of stack on top
  *
- * @upper: A pointer to the upper of the stack.
- * @lower: A pointer to the lower of the stack.
- *
- * Users can use this function to perform a left rotation on the stack.
+ * @top: top of stack
+ * @bot: bottom of stack
  */
-void rotateLeft(stack_t **upper, stack_t **lower)
+void rotr(stack_t **top, stack_t **bot)
 {
-	stack_t *upper_ptr = *upper, *lower_ptr = *lower;
+	stack_t *ptrt = *top, *ptrb = *bot;
 
-	/* Check if there are enough elements in the stack to perform the rotation */
-	if (upper_ptr == NULL || upper_ptr->prev == NULL)
-	{
+	if (ptrt == NULL || ptrt->prev == NULL)
 		return;
-	}
-
-	/* Adjust pointers to perform the left rotation */
-	upper_ptr->next = lower_ptr;
-	lower_ptr->prev = upper_ptr;
-	*upper = upper_ptr->prev;
-	(*upper)->next = NULL;
-	*lower = upper_ptr;
-	upper_ptr->prev = NULL;
+	ptrt->next = ptrb;
+	ptrb->prev = ptrt;
+	*bot = ptrb->next;
+	(*bot)->prev = NULL;
+	*top = ptrb;
+	ptrb->next = NULL;
 }

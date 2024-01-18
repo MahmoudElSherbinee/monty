@@ -1,115 +1,92 @@
 #include "monty.h"
 
-/**
- * pushNewValue - function pushes a new value onto the stack
- * based on the specified mode.
- * This function allocates memory for a new stack node,
- * assigns the given value to it, and adjusts
- * the pointers accordingly based on the specified mode
- * (STACKMODE or QUEUEMODE).
- *
- * @upper: A pointer to the upper of the stack.
- * @lower: A pointer to the lowertom of the stack.
- * @value: The value to be pushed onto the stack.
- * @mode: The mode indicating whether to use STACKMODE or QUEUEMODE.
- *
- * Users can use this function to push values onto the stack
- * with different modes.
- */
-void pushNewValue(stack_t **upper, stack_t **lower, int value, int mode)
-{
-	stack_t *newNode = malloc(sizeof(stack_t));
 
-	if (newNode == NULL)
+/**
+ * push - pushes a value onto the stack and updates pointers
+ *
+ * @top: top of stack
+ * @bot: bottom of stack
+ * @val: value to push
+ * @mode: stack or queue mode (put on top or bottom)
+ */
+void push(stack_t **top, stack_t **bot, int val, int mode)
+{
+	stack_t *ptr;
+
+	ptr = malloc(sizeof(stack_t));
+	if (ptr == NULL)
 	{
 		printf("Error: malloc failed\n");
-		wrapExit(EXIT_FAILURE, NULL, *upper);
+		exitwrap(EXIT_FAILURE, NULL, *top);
 	}
-
-	newNode->n = value;
-
-	if (*upper == NULL)
+	ptr->n = val;
+	if (*top == NULL)
 	{
-		newNode->prev = NULL;
-		newNode->next = NULL;
-		*upper = newNode;
-		*lower = newNode;
+		ptr->prev = NULL;
+		ptr->next = NULL;
+		*top = ptr;
+		*bot = ptr;
 	}
-	else if (mode == S_M)
+	else if (mode == STACKMODE)
 	{
-		newNode->next = NULL;
-		newNode->prev = *upper;
-		(*upper)->next = newNode;
-		*upper = newNode;
+		ptr->next = NULL;
+		ptr->prev = *top;
+		(*top)->next = ptr;
+		*top = ptr;
 	}
-	else if (mode == Q_M)
+	else if (mode == QUEUEMODE)
 	{
-		newNode->prev = NULL;
-		newNode->next = *lower;
-		(*lower)->prev = newNode;
-		*lower = newNode;
+		ptr->prev = NULL;
+		ptr->next = *bot;
+		(*bot)->prev = ptr;
+		*bot = ptr;
 	}
 }
 
+
 /**
- * popTopElement - function pops the upper element from the stack.
- * This function removes the upper element from the stack,
- * freeing the corresponding memory.
+ * pop - pop top element of stack
  *
- * @upper: A pointer to the upper of the stack.
- *
- * Users can use this function to pop elements from the stack.
+ * @top: top of stack
  */
-void popTopElement(stack_t **upper)
+void pop(stack_t **top)
 {
-	stack_t *ptr = *upper;
+	stack_t *ptr = *top;
 
 	if (ptr == NULL)
-	{
-		wrapExit(EXIT_FAILURE, "can't pop an empty stack", *upper);
-	}
-
+		exitwrap(EXIT_FAILURE, "can't pop an empty stack", *top);
 	if (ptr->prev == NULL)
 	{
-		free(*upper);
-		*upper = NULL;
+		free(*top);
+		*top = NULL;
 	}
 	else
 	{
 		ptr = ptr->prev;
 		ptr->next = NULL;
-		free(*upper);
-		*upper = ptr;
+		free(*top);
+		*top = ptr;
 	}
 }
 
 /**
- * swapTopElements - function swaps the upper two elements of the stack.
- * This function swaps the positions of the upper two elements in the stack.
+ * swap - swap top two values on stack and update top/bottom
  *
- * @upper: A pointer to the upper of the stack.
- * @lower: A pointer to the lowertom of the stack.
- *
- * Users can use this function to swap the upper two elements in the stack.
+ * @top: top of stack
+ * @bot: bottom of stack
  */
-void swapTopElements(stack_t **upper, stack_t **lower)
+void swap(stack_t **top, stack_t **bot)
 {
-	stack_t *ptr = *upper;
+	stack_t *ptr = *top;
 
 	if (ptr == NULL || ptr->prev == NULL)
-	{
-		wrapExit(EXIT_FAILURE, "can't swap, stack too short", *upper);
-	}
-
+		exitwrap(EXIT_FAILURE, "can't swap, stack too short", *top);
 	ptr = ptr->prev;
-	(*upper)->prev = ptr->prev;
-	ptr->next = (*upper)->next;
-	ptr->prev = *upper;
-	(*upper)->next = ptr;
-	*upper = ptr;
-
-	if ((*lower)->prev != NULL)
-	{
-		*lower = (*lower)->prev;
-	}
+	(*top)->prev = ptr->prev;
+	ptr->next = (*top)->next;
+	ptr->prev = *top;
+	(*top)->next = ptr;
+	*top = ptr;
+	if ((*bot)->prev != NULL)
+		*bot = (*bot)->prev;
 }
