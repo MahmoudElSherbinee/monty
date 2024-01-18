@@ -14,28 +14,23 @@
  */
 int isNumericString(char *s)
 {
+	/* Check if the next character is a digit */
+	if (s == NULL || *s == '\0')
+		return (0);
+
 	/* Check for negative sign and move to the next character */
-	if (*s == '-')
-	{
-		s++;
+	if (*s == '-' || *s == '+')
 
-		/* Check if the next character is a digit */
-		if (*s < '0' || *s > '9')
-		{
-			return (0);
-		}
-
-		/* Move to the next character */
+	/* Move to the next character */
 		s++;
-	}
 
 	/* Check the remaining characters for digits */
-	while (*s != 0)
+	while (*s != '\0')
 	{
-		if (*s < '0' || *s++ > '9')
-		{
+		if (*s < '0' || *s > '9')
 			return (0);
-		}
+
+		s++;
 	}
 
 	/* The string represents a numerical value */

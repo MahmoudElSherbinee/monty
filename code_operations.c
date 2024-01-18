@@ -1,241 +1,179 @@
 #include "monty.h"
 
 /**
- * addTopElements - function adds the upper two elements of the stack.
- * This function adds the values of the upper two elements
- * in the stack and updates the stack accordingly.
+ * addTopElements - function adds the top two elements of x custom stack.
  *
- * @upper: A pointer to the upper of the stack.
+ * This function adds the values of the top two elements of the custom stack
+ * and replaces the top element with the res. If the stack has fewer than
+ * two elements, it prints an error message and exits with EXIT_FAILURE.
  *
- * Users can use this function to add the upper two elements in the stack.
+ * @custom_stack: A pointer to x pointer to the custom stack.
+ * @LineNumber: The line number where the add operation is performed.
  */
-void addTopElements(stack_t **upper)
+void addTopElements(stack_t **custom_stack, unsigned int LineNumber)
 {
-	stack_t *ptr = *upper;
-	long number;
-
-	/*
-	 * Check if there are enough elements in the stack to perform the addition.
-	 * If not, exit with an error message.
-	 */
-	if (ptr == NULL || ptr->prev == NULL)
+	/* Check if the stack has at least two elements */
+	if (*custom_stack == NULL || (*custom_stack)->next == NULL)
 	{
-		wrapExit(EXIT_FAILURE, "can't add, stack too short", *upper);
+		fprintf(stderr, "L%d: can't add, stack too short\n", LineNumber);
+		free(glob.lineNumber);
+		custom_free(*custom_stack);
+		exit(EXIT_FAILURE);
 	}
-	else
-	{
-		/* Store the value of the upper element. */
-		number = ptr->n;
 
-		/* Move the pointer to the second-upper element. */
-		ptr = ptr->prev;
+	/* Add the values of the top two elements */
+	(*custom_stack)->next->n += (*custom_stack)->n;
 
-		/*
-		 * Adjust the pointers and free the memory of the upper element.
-		 */
-		ptr->next = NULL;
-		free(*upper);
-		*upper = ptr;
-
-		/* Update the second-upper element by adding the upper element's value. */
-		ptr->n += number;
-	}
+	/* Remove the top element from the stack */
+	popTopElement(custom_stack, LineNumber);
 }
 
 /**
- * subtractTopElements - function subtracts the upper element
- * from the second-upper element in the stack.
- * This function subtracts the value of the second-upper element
- * from the upper element in the stack
- * and updates the stack accordingly.
+ * subtractTopElements - function subtracts the top element
+ * from the second top element of x custom stack.
+ * This function subtracts the value of the top
+ * element from the second top element of the custom stack
+ * and replaces the top element with the res. If the stack has
+ * fewer than two elements,
+ * it prints an error message and exits with EXIT_FAILURE.
  *
- * @upper: A pointer to the upper of the stack.
- *
- * Users can use this function to subtract the upper element
- * from the second-upper element in the stack.
+ * @custom_stack: A pointer to x pointer to the custom stack.
+ * @LineNumber: The line number where the sub operation is performed.
  */
-void subtractTopElements(stack_t **upper)
+void subtractTopElements(stack_t **custom_stack, unsigned int LineNumber)
 {
-	stack_t *ptr = *upper;
-	long number;
+	int res;
+	stack_t *temproary;
 
-	/*
-	 * Check if there are enough elements in the stack to perform the subtraction.
-	 * If not, exit with an error message.
-	 */
-	if (ptr == NULL || ptr->prev == NULL)
+	/* Check if the stack has at least two elements */
+	if (*custom_stack == NULL || (*custom_stack)->next == NULL)
 	{
-		wrapExit(EXIT_FAILURE, "can't sub, stack too short", *upper);
+		fprintf(stderr, "L%d: can't sub, stack too short\n", LineNumber);
+		exit(EXIT_FAILURE);
 	}
-	else
-	{
-		/* Store the value of the upper element. */
-		number = ptr->n;
 
-		/* Move the pointer to the second-upper element. */
-		ptr = ptr->prev;
+	/* Perform the subtraction and update the value of the second top element */
+	temproary = *custom_stack;
+	res = temproary->next->n - temproary->n;
+	temproary->next->n = res;
 
-		/*
-		 * Adjust the pointers and free the memory of the upper element.
-		 */
-		ptr->next = NULL;
-		free(*upper);
-		*upper = ptr;
-
-		/* Update the second-upper element by */
-		/* subtracting the upper element's value. */
-		ptr->n -= number;
-	}
+	/* Remove the top element from the stack and free its memory */
+	*custom_stack = temproary->next;
+	free(temproary);
 }
 
 /**
- * multiplyTopElements - function multiplies upper two elements of the stack
- * This function multiplies the value of the second-upper element
- * with the upper element in the stack and updates the stack accordingly.
+ * multiplyTopElements - function multiplies
+ * the top two elements of x custom stack.
+ * This function multiplies the values of
+ * the top two elements of the custom stack
+ * and replaces the top element with the res.
+ * If the stack has fewer than two
+ * elements, it prints an error message and exits with EXIT_FAILURE.
  *
- * @upper: A pointer to the upper of the stack.
- *
- * Users can use this function to multiply the upper two elements in the stack.
+ * @custom_stack: A pointer to x pointer to the custom stack.
+ * @LineNumber: The line number where the mul operation is performed.
  */
-void multiplyTopElements(stack_t **upper)
+void multiplyTopElements(stack_t **custom_stack, unsigned int LineNumber)
 {
-	stack_t *ptr = *upper;
-	long number;
+	int res;
+	stack_t *temproary;
 
-	/*
-	 * Check if there are enough elements in the stack
-	 * to perform the multiplication.
-	 * If not, exit with an error message.
-	 */
-	if (ptr == NULL || ptr->prev == NULL)
+	/* Check if the stack has at least two elements */
+	if (*custom_stack == NULL || (*custom_stack)->next == NULL)
 	{
-		wrapExit(EXIT_FAILURE, "can't mul, stack too short", *upper);
+		fprintf(stderr, "L%d: can't mul, stack too short\n", LineNumber);
+		exit(EXIT_FAILURE);
 	}
-	else
-	{
-		/* Store the value of the upper element. */
-		number = ptr->n;
 
-		/* Move the pointer to the second-upper element. */
-		ptr = ptr->prev;
+	/* Perform the multiplication and */
+	/* update the value of the second top element */
+	temproary = *custom_stack;
+	res = temproary->next->n * temproary->n;
+	temproary->next->n = res;
 
-		/*
-		 * Adjust the pointers and free the memory of the upper element.
-		 */
-		ptr->next = NULL;
-		free(*upper);
-		*upper = ptr;
-
-		/* Update the second-upper element by */
-		/* multiplying it with the upper element's value. */
-		ptr->n *= number;
-	}
+	/* Remove the top element from the stack and free its memory */
+	*custom_stack = temproary->next;
+	free(temproary);
 }
 
 /**
- * divideTopElements - function divides the second-upper element
- * by the upper element in the stack.
- * This function divides the value of the second-upper element
- * by the upper element in the stack
- * and updates the stack accordingly.
+ * divideTopElements - function divides the second top element
+ * by the top element of x custom stack.
+ * This function divides the value of the second top element by the top element
+ * of the custom stack and replaces the top element with the res. If the stack
+ * has fewer than two elements or the top element is zero, it prints an error
+ * message and exits with EXIT_FAILURE.
  *
- * @upper: A pointer to the upper of the stack.
- *
- * Users can use this function to perform division in the stack.
+ * @custom_stack: A pointer to x pointer to the custom stack.
+ * @LineNumber: The line number where the div operation is performed.
  */
-void divideTopElements(stack_t **upper)
+void divideTopElements(stack_t **custom_stack, unsigned int LineNumber)
 {
-	stack_t *ptr = *upper;
-	long number;
+	int res;
+	stack_t *temproary;
 
-	/*
-	 * Check if there are enough elements in the stack to perform the division.
-	 * If not, exit with an error message.
-	 */
-	if (ptr == NULL || ptr->prev == NULL)
+	/* Check if the stack has at least two elements */
+	if (*custom_stack == NULL || (*custom_stack)->next == NULL)
 	{
-		wrapExit(EXIT_FAILURE, "can't div, stack too short", *upper);
+		fprintf(stderr, "L%d: can't div, stack too short\n", LineNumber);
+		exit(EXIT_FAILURE);
 	}
-	else
+
+	temproary = *custom_stack;
+
+	/* Check if the top element is zero */
+	if (temproary->n == 0)
 	{
-		/* Store the value of the upper element. */
-		number = ptr->n;
-
-		/*
-		 * Check if division by zero would occur.
-		 * If so, exit with an error message.
-		 */
-		if (number == 0)
-		{
-			wrapExit(EXIT_FAILURE, "division by zero", *upper);
-		}
-
-		/* Move the pointer to the second-upper element. */
-		ptr = ptr->prev;
-
-		/*
-		 * Adjust the pointers and free the memory of the upper element.
-		 */
-		ptr->next = NULL;
-		free(*upper);
-		*upper = ptr;
-
-		/* Update the second-upper element by */
-		/* dividing it by the upper element's value. */
-		ptr->n /= number;
+		fprintf(stderr, "L%d: division by zero\n", LineNumber);
+		exit(EXIT_FAILURE);
 	}
+
+	/* Perform the division and update the value of the second top element */
+	res = temproary->next->n / temproary->n;
+	temproary->next->n = res;
+
+	/* Remove the top element from the stack and free its memory */
+	*custom_stack = temproary->next;
+	free(temproary);
 }
 
 /**
- * calculateRemainder - function computes the remainder after
- * dividing the second-upper element by the upper element in the stack.
- * This function computes the remainder after dividing
- * the value of the second-upper element by the
- * upper element in the stack and updates the stack accordingly.
+ * calculateRemainder - function computes the remainder of the division
+ * of the second top element by the top element of x custom stack.
+ * This function computes the remainder when dividing the value of the
+ * second top element by the top element of the custom stack.
+ * It replaces the top element with the res.
+ * If the stack has fewer than two elements or the top element is zero,
+ * it prints an error message and exits with EXIT_FAILURE.
  *
- * @upper: A pointer to the upper of the stack.
- *
- * @note Users can use this function to calculate the remainder in the stack.
+ * @custom_stack: A pointer to x pointer to the custom stack.
+ * @LineNumber: The line number where the mod operation is performed.
  */
-void calculateRemainder(stack_t **upper)
+void calculateRemainder(stack_t **custom_stack, unsigned int LineNumber)
 {
-	stack_t *ptr = *upper;
-	long number;
+	int x, y;
 
-	/*
-	 * Check if there are enough elements in the stack
-	 * to perform the remainder calculation.
-	 * If not, exit with an error message.
-	 */
-	if (ptr == NULL || ptr->prev == NULL)
+	/* Check if the stack has at least two elements */
+	if (*custom_stack == NULL || (*custom_stack)->next == NULL)
 	{
-		wrapExit(EXIT_FAILURE, "can't mod, stack too short", *upper);
+		fprintf(stderr, "L%d: can't mod, stack too short\n", LineNumber);
+		exit(EXIT_FAILURE);
 	}
-	else
+
+	x = (*custom_stack)->n;
+	y = (*custom_stack)->next->n;
+
+	/* Check if the top element is zero */
+	if (x == 0)
 	{
-		/* Store the value of the upper element. */
-		number = ptr->n;
-
-		/*
-		 * Check if division by zero would occur.
-		 * If so, exit with an error message.
-		 */
-		if (number == 0)
-		{
-			wrapExit(EXIT_FAILURE, "division by zero", *upper);
-		}
-
-		/* Move the pointer to the second-upper element. */
-		ptr = ptr->prev;
-
-		/*
-		 * Adjust the pointers and free the memory of the upper element.
-		 */
-		ptr->next = NULL;
-		free(*upper);
-		*upper = ptr;
-
-		/* Update the second-upper element by calculating the remainder. */
-		ptr->n %= number;
+		fprintf(stderr, "L%d: division by zero\n", LineNumber);
+		exit(EXIT_FAILURE);
 	}
+
+	/* Compute the remainder and update the value of the second top element */
+	(*custom_stack)->next->n = y % x;
+
+	/* Remove the top element from the stack */
+	popTopElement(custom_stack, LineNumber);
 }

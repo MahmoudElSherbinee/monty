@@ -1,120 +1,111 @@
 #include "monty.h"
 
 /**
- * printChar - function prints the character at the upper of the stack.
- * This function prints the character at the upper of the stack, and
- * exits with an error message if the stack is empty
- * or the value is out of range.
+ * printChar - function prints the ASCII character corresponding
+ * to the top element of a custom stack.
+ * This function prints the ASCII character represented by
+ * the top element of the
+ * custom stack.
+ * If the stack is empty or the value is out of the valid ASCII range,
+ * it prints an error message and exits with EXIT_FAILURE.
  *
- * @upper: A pointer to the upper of the stack.
- *
- * Users can use this function to print the character at the upper of the stack
+ * @custom_stack: A pointer to a pointer to the custom stack.
+ * @LineNumber: The line number where the pchar operation is performed.
  */
-void printChar(stack_t **upper)
+void printChar(stack_t **custom_stack, unsigned int LineNumber)
 {
-	stack_t *ptr = *upper;
+	int ascii_value;
 
-	/*
-	 * Check if the stack is empty.
-	 */
-	if (ptr == NULL)
+	/* Check if the stack is empty */
+	if (*custom_stack == NULL)
 	{
-		wrapExit(EXIT_FAILURE, "can't pchar, stack empty", *upper);
+		fprintf(stderr, "L%d: can't pchar, stack empty\n", LineNumber);
+		exit(EXIT_FAILURE);
 	}
 
-	/*
-	 * Check if the value is out of the valid character range.
-	 */
-	if (ptr->n > 127 || ptr->n < 0)
+	/* Retrieve the value from the top element of the stack */
+	ascii_value = (*custom_stack)->n;
+
+	/* Check if the value is within the valid ASCII range */
+	if (ascii_value < 0 || ascii_value > 127)
 	{
-		wrapExit(EXIT_FAILURE, "can't pchar, value out of range", *upper);
+		fprintf(stderr, "L%d: can't pchar, value out of range\n", LineNumber);
+		exit(EXIT_FAILURE);
 	}
 
-	/*
-	 * Print the character.
-	 */
-	printf("%c\n", (char)ptr->n);
+	/* Print the corresponding ASCII character */
+	printf("%c\n", ascii_value);
 }
 
 /**
- * printString - function prints the string represented
- * by ASCII values in the stack.
- * This function prints the string represented by ASCII values in the stack,
- * starting from the upper of the stack and moving towards the bottom,
- * and stops when encountering a non-printable or out-of-range character.
+ * printString - function prints the string representation
+ * of the elements in a custom stack.
+ * This function prints the string representation
+ * of the elements in the custom stack
+ * until it reaches a non-printable character, a zero, or the end of the stack.
  *
- * @upper: A pointer to the upper of the stack.
- *
- * Users can use this function to print the string
- * represented by ASCII values in the stack.
+ * @custom_stack: A pointer to a pointer to the custom stack.
+ * @LineNumber: The line number where the pstr operation is performed.
  */
-void printString(stack_t **upper)
+void printString(stack_t **custom_stack, unsigned int LineNumber)
 {
-	stack_t *ptr = *upper;
+	stack_t *now = *custom_stack;
+	(void)LineNumber;
 
-	/*
-	 * Iterate through the stack and print characters until a non-printable
-	 * or out-of-range character is encountered.
-	 */
-	while (ptr != NULL && ptr->n <= 127 && ptr->n > 0)
+	/* Traverse the stack and print characters until */
+	/* a non-printable character or zero is encountered */
+	while (now && now->n > 0 && now->n <= 127)
 	{
-		printf("%c", (char)ptr->n);
-		ptr = ptr->prev;
+		printf("%c", now->n);
+		now = now->next;
 	}
 
-	/*
-	 * Print a newline character after printing the string.
-	 */
+	/* Print a newline character after printing the string */
 	printf("\n");
 }
 
 /**
- * printAll - function prints all elements in the stack.
- * This function prints all elements in the stack, starting from the upper
- * and moving towards the bottom, along with a newline after each element.
+ * printTopInt - function prints the top element of a
+ * custom stack as an integer.
+ * This function prints the value of the top element of the custom stack.
+ * If the stack is empty, it prints an error
+ * message and exits with EXIT_FAILURE.
  *
- * @upper: A pointer to the upper of the stack.
- *
- * Users can use this function to print all elements in the stack.
+ * @custom_stack: A pointer to a pointer to the custom stack.
+ * @LineNumber: The line number where the pint operation is performed.
  */
-
-void printAll(stack_t **upper)
+void printTopInt(stack_t **custom_stack, unsigned int LineNumber)
 {
-	stack_t *ptr = *upper;
-
-	/*
-	 * Iterate through the stack and print each element along with a newline.
-	 */
-	while (ptr != NULL)
+	/* Check if the stack is empty */
+	if (*custom_stack == NULL)
 	{
-		printf("%d\n", ptr->n);
-		ptr = ptr->prev;
+		fprintf(stderr, "L%d: can't pint, stack empty\n", LineNumber);
+		free(glob.lineNumber);
+		custom_free(*custom_stack);
+		exit(EXIT_FAILURE);
 	}
+
+	/* Print the value of the top element as an integer */
+	printf("%d\n", (*custom_stack)->n);
 }
 
 /**
- * printTopInt - function prints the value
- * at the upper of the stack as an integer.
- * This function prints the value at the upper of the stack and
- * exits with an error message if the stack is empty.
+ * printAll - function prints all elements of a custom stack.
  *
- * @upper: A pointer to the upper of the stack.
+ * This function prints the values of all elements in the custom stack.
  *
- * Users can use this function to print the value at the upper of the stack.
+ * @custom_stack: A pointer to a pointer to the custom stack.
+ * @LineNumber: The line number where the pall operation is performed.
  */
-void printTopInt(stack_t **upper)
+void printAll(stack_t **custom_stack, unsigned int LineNumber)
 {
-	/*
-	 * Check if the stack is empty.
-	 * If so, exit with an error message.
-	 */
-	if (*upper == NULL)
-	{
-		wrapExit(EXIT_FAILURE, "can't pint, stack empty", *upper);
-	}
+	stack_t *now = *custom_stack;
 
-	/*
-	 * Print the value at the upper of the stack.
-	 */
-	printf("%d\n", (*upper)->n);
+	/* Traverse the stack and print each element */
+	while (now != NULL)
+	{
+		printf("%d\n", now->n);
+		now = now->next;
+		(void)LineNumber; /* Unused parameter */
+	}
 }
