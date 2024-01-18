@@ -1,8 +1,17 @@
-read num (ascii - 48) into block #1
->,-----------------------------------------------
-read num (ascii - 48 ('0')) into block #2
->,-----------------------------------------------
-[<<+>>-] add block #2 to block #0
-<[<+>-] add block #1 to block #0
-<++++++++++++++++++++++++++++++++++++++++++++++++
-. print contents of block #0
+# Read the first digit and convert it to its numeric value
+,>----------------------------------------------
+
+# Read the second digit and convert it to its numeric value
+>,----------------------------------------------
+
+# Add the numeric values of the two digits
+[->+<]
+
+# Add the first digit to the total
+<[->+<]
+
+# Increment to get the ASCII code of the result
+>++++
+
+# Print the result
+.
