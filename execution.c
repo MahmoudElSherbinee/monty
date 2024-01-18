@@ -20,23 +20,24 @@ void execute_operation_code(char *operation_code, stack_t **custom_stack,
 		{"push", pushNewValue},
 		{"pop", popTopElement},
 		{"swap", swapTopElements},
-
 		/* PRINTERS */
 		{"pchar", printChar},
 		{"pstr", printString},
 		{"pall", printAll},
 		{"pint", printTopInt},
-
 		/* CODE OPERAIONS */
 		{"add", addTopElements},
 		{"sub", subtractTopElements},
 		{"mul", multiplyTopElements},
 		{"div", divideTopElements},
 		{"mod", calculateRemainder},
-
 		/* ROTATIONS */
 		{"rotr", rotateRight},
 		{"rotl", rotateLeft},
+		/* Stack */
+		{"stack", my_custom_stack},
+		/* Queue */
+		{"queue", my_custom_queue},
 		{"nop", cunstom_nop},
 		{NULL, NULL}};
 	int i;
@@ -44,8 +45,7 @@ void execute_operation_code(char *operation_code, stack_t **custom_stack,
 	for (i = 0; instructions[i].opcode != NULL; i++)
 	{
 		if (strcmp(operation_code, instructions[i].opcode) == 0)
-		{
-			instructions[i].f(custom_stack, LineNumber);
+		{	instructions[i].f(custom_stack, LineNumber);
 			return;
 		}
 	}

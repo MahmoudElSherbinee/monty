@@ -102,14 +102,21 @@ void pushNewValue(stack_t **custom_stack, unsigned int LineNumber)
 	/* Convert the scriptBuffer to an integer */
 	value = atoi(glob.scriptBuffer);
 
-	/* Add the integer to the stack */
-	if (add_custom_node(custom_stack, value) == NULL)
+	if (glob.val == 0)
 	{
-		fprintf(stderr, "Error: malloc failed\n");
-		custom_free(*custom_stack);
-		fclose(glob.scriptFile);
-		free(glob.lineNumber);
-		exit(EXIT_FAILURE);
+		/* Add the integer to the stack */
+		if (add_custom_node(custom_stack, value) == NULL)
+		{
+			fprintf(stderr, "Error: malloc failed\n");
+			custom_free(*custom_stack);
+			fclose(glob.scriptFile);
+			free(glob.lineNumber);
+			exit(EXIT_FAILURE);
+		}
+	}
+	else
+	{
+		Prepaire_queue(custom_stack, value);
 	}
 }
 

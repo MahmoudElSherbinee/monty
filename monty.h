@@ -58,6 +58,7 @@ typedef struct instruction_s
  * @lineNumber: An unsigned long integer representing the current line number
  * in the script.
  * @scriptFile: A FILE pointer representing the Monty script file.
+ * @val: The mode if Stack or Queue.
  *
  * Users can use this structure to manage global information
  * related to Monty scripting.
@@ -67,6 +68,7 @@ typedef struct MontyGlobal
 	char *scriptBuffer;		  /**< Script buffer associated with the structure. */
 	char *lineNumber; /**< Current line number in the Monty script. */
 	FILE *scriptFile;		  /**< FILE pointer for Monty script operations. */
+	int val;
 } MontyGlobal;
 
 extern MontyGlobal glob;
@@ -110,6 +112,10 @@ void custom_execute(stack_t **custom_stack);
 void execute_operation_code(char *operation_code, stack_t **custom_stack,
 							unsigned int LineNumber);
 
+/* Stack Or Queue*/
+void my_custom_stack(stack_t **custom_stack, unsigned int LineNumber);
+void Prepaire_queue(stack_t **head, unsigned int value);
+void my_custom_queue(stack_t **custom_queue, unsigned int LineNumber);
 
 /* main */
 void cunstom_nop(stack_t **custom_stack, unsigned int LineNumber);
