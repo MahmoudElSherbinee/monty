@@ -179,7 +179,7 @@ Rotates the stack. The last element becomes the top, and the top element becomes
 
 ### `stack`
 Changes the mode to first in, first out (FIFO) - the default behavior. The front of the queue becomes the top of the stack.
-more more another moooore
+more more
 - **Usage:**
   ```bash
   stack
